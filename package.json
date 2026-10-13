@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "description": "A local-first browser that compiles web apps into MCP servers (PMCPs).",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=22"

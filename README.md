@@ -183,4 +183,4 @@ During the design stage, please open an issue to discuss changes to these docume
 
 ## License
 
-Proposed: **Apache-2.0**. It will be confirmed before the first code contribution is accepted.
+Licensed under the [Apache License, Version 2.0](LICENSE).

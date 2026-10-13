@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "description": "Capability schemas, binders and conformance suites.",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
