@@ -123,6 +123,29 @@ $('#add-task-btn').addEventListener('click', async () => {
   await loadTasks();
 });
 
+// Reached only from the "Show stats" button, which exercise.js never clicks: traffic capture misses it, but the
+// literal URL is visible to static analysis (testing the optional REA analysis source).
+async function showStats() {
+  const response = await fetch('/api/stats', { headers: { accept: 'application/json' } });
+  const stats = await response.json();
+  $('#details').textContent = `${stats.open} open, ${stats.done} done`;
+}
+
+// Declares one tool through WebMCP where the browser supports it (the "native tools" source in the architecture).
+if (navigator.modelContext && typeof navigator.modelContext.registerTool === 'function') {
+  navigator.modelContext.registerTool({
+    name: 'count_open_tasks',
+    description: 'Count the open tasks in the selected project.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true },
+    async execute() {
+      const tasks = await api(`/api/tasks?projectId=${state.projectId}&done=false`);
+      return { content: [{ type: 'text', text: String(tasks.length) }] };
+    },
+  });
+}
+
+$('#stats-btn').addEventListener('click', () => showStats());
 $('#search').addEventListener('input', () => loadTasks());
 $('#filter').addEventListener('change', () => loadTasks());
 

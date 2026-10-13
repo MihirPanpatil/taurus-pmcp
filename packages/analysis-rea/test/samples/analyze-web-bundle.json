@@ -1,0 +1,111 @@
+{
+  "evidence_id": "ev_175d3f2bac08e064ed9735d0b52f1cc50925890cd8283cf19a5c851b65e11fd6",
+  "subject": null,
+  "provider": {
+    "id": "rea-cdp-browser",
+    "name": "REA Chrome DevTools Protocol observation provider",
+    "version": "2"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.web-bundle-analysis",
+  "operation": "analyze_web_bundle",
+  "parameters": {
+    "cdp_endpoint": "http://127.0.0.1:9334",
+    "allowed_origins": [],
+    "target_id": "E45C9DE5B58AD00547AD2E4F7C942B03",
+    "observation_ms": 1500,
+    "include_accessibility_text": false,
+    "include_console_text": false,
+    "include_json_body_shapes": false,
+    "include_websocket_shapes": false,
+    "include_storage_keys": false,
+    "include_storage_fingerprints": false,
+    "include_script_sources": true,
+    "fetch_source_maps": false
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "capture": {
+      "target_url": "http://127.0.0.1:9334/",
+      "scripts_observed": 1,
+      "scripts_analyzed": 1,
+      "source_artifacts": [
+        {
+          "sha256": "472a33f8141312bf22ad220342acfe8c5ca5ae0c69e0c49a596e7440c4d5ddcb",
+          "bytes": 5750,
+          "media_type": "text/javascript",
+          "charset": "utf-8",
+          "text_available": true
+        }
+      ]
+    },
+    "observations": {
+      "chunks": {
+        "nodes": [
+          {
+            "script_key": "scr_e60b9d8c4d2c8fed16b306cdbdff75e74fb11ad4d2be96837afdb1c19a95c6a9",
+            "url": "http://127.0.0.1:9334/app.js",
+            "artifact_sha256": "472a33f8141312bf22ad220342acfe8c5ca5ae0c69e0c49a596e7440c4d5ddcb",
+            "bytes": 5750
+          }
+        ],
+        "edges": []
+      },
+      "routes": [],
+      "endpoints": [
+        {
+          "value": "/api/stats",
+          "mechanism": "call:fetch",
+          "location": {
+            "script_key": "scr_e60b9d8c4d2c8fed16b306cdbdff75e74fb11ad4d2be96837afdb1c19a95c6a9",
+            "line": 129,
+            "column": 25
+          }
+        }
+      ],
+      "webmcp_declarations": [
+        {
+          "name": "count_open_tasks",
+          "description": "Count the open tasks in the selected project.",
+          "schema_property_names": [],
+          "trust": "page-declared-untrusted",
+          "location": {
+            "script_key": "scr_e60b9d8c4d2c8fed16b306cdbdff75e74fb11ad4d2be96837afdb1c19a95c6a9",
+            "line": 136,
+            "column": 2
+          }
+        }
+      ],
+      "source_maps": {
+        "status": "not_requested",
+        "requested": 0,
+        "processed": 0,
+        "items": []
+      }
+    },
+    "inferences": [],
+    "unknowns": [],
+    "completeness": {
+      "status": "complete",
+      "parsed_scripts": 1,
+      "parse_failures": 0,
+      "visited_ast_nodes": 985
+    },
+    "limitations": [
+      "Static bundle findings are observations or bounded inferences; REA does not execute captured JavaScript.",
+      "String-built routes and endpoints, encrypted configuration, and server-side behavior may remain unknown.",
+      "Page-declared WebMCP metadata is untrusted and is never registered or invoked as an REA tool."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "external-service",
+  "environment": null,
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Static bundle findings are observations or bounded inferences; REA does not execute captured JavaScript.",
+    "String-built routes and endpoints, encrypted configuration, and server-side behavior may remain unknown.",
+    "Page-declared WebMCP metadata is untrusted and is never registered or invoked as an REA tool."
+  ],
+  "locations": [],
+  "evidence_links": []
+}

@@ -14,6 +14,9 @@
       "path": "adapters/rest-observer"
     },
     {
+      "path": "packages/analysis-rea"
+    },
+    {
       "path": "packages/gateway"
     },
     {

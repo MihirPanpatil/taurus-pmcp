@@ -36,6 +36,8 @@ pnpm taurus serve
 
 The monitor loads nothing from outside your machine, and its API needs the token from that link.
 
+**Optional: find tools in the app's code with [REA](https://github.com/morluto/rea).** If REA is installed (`npm install --global rea-agents`), add `--analyze rea` to `compile`. Taurus then also lists endpoints and WebMCP declarations it finds in the page's JavaScript. Anything traffic capture didn't see is marked "found in code, not tested" and stays off until you switch it on. `pnpm taurus sources` shows whether REA is available. See [Architecture 3.4](docs/ARCHITECTURE.md#34-optional-analysis-sources).
+
 Run the checks:
 
 ```bash
@@ -55,6 +57,7 @@ pnpm e2e
 | Runtime: profiles, validation, approvals, per-site rate limits, own-site-only requests, audit log | Working |
 | MCP gateway: loopback only, bearer token per profile, browser origins rejected | Working |
 | Monitor PWA: approvals, tool toggles with token costs, live calls, checks, agent connection | Working. Change feed, rate budgets and the connection ledger are not built yet. |
+| Optional REA analysis source: code-only endpoints and WebMCP declarations | Working, opt-in |
 | Workflows, watches, LLM-assisted binding, other adapters | Not started |
 
 ### Repository layout
@@ -65,6 +68,7 @@ packages/core            Shape capture, compiler, app model, PMCP store, runtime
 packages/capabilities    Capability schemas, binders and conformance suites (tasks)
 packages/gateway         MCP server over Streamable HTTP
 packages/monitor         Monitor PWA and its API, served by the gateway
+packages/analysis-rea    Optional analysis source backed by REA
 packages/shell           Electron shell: app sessions and network capture
 packages/cli             The `taurus` command
 adapters/rest-observer   Turns observed REST traffic into operations

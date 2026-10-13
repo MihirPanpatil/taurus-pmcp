@@ -19,6 +19,7 @@
     "@taurus/adapter-rest-observer": "workspace:*",
     "@taurus/capabilities": "workspace:*",
     "@taurus/core": "workspace:*",
-    "electron": "44.7.0"
+    "electron": "44.7.0",
+    "@taurus/analysis-rea": "workspace:*"
   }
 }

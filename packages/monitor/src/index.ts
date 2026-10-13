@@ -112,6 +112,7 @@ export function createMonitor(options: MonitorOptions): GatewayExtension {
       schema: tool.schema,
       tier: tool.tier,
       effect: tool.effect,
+      codeOnly: tool.codeOnly,
       enabled: tool.enabled,
       confidence: tool.confidence,
       description: tool.description,
@@ -128,6 +129,14 @@ export function createMonitor(options: MonitorOptions): GatewayExtension {
       enabledTokens: tools.filter((t) => t.enabled).reduce((sum, t) => sum + t.tokens, 0),
       checks: model.verification ?? [],
       endpoint: `${ownOrigin}/pmcp/${appId}/${profile}/mcp`,
+      // What optional analysis sources found in the app's code. Page-declared text is untrusted; the UI shows it as text.
+      found: {
+        sources: model.analysis ?? [],
+        operations: model.operations
+          .filter((op) => op.evidence.seen === 'code-only')
+          .map((op) => ({ name: op.nameHint, risk: op.ratings.risk, source: op.adapterId.replace(/^analysis:/, ''), note: op.descriptionHint ?? '' })),
+        declaredTools: model.declaredTools ?? [],
+      },
     };
   }
 
@@ -186,8 +195,8 @@ export function createMonitor(options: MonitorOptions): GatewayExtension {
         }
         const tool = (await runtime.describeTools(appId, profileName)).find((t) => t.slot === slot);
         if (!tool) throw new HttpError(404, 'not_found', `No tool "${slot}".`);
-        if (enabled && NEEDS_APPROVAL.includes(tool.effect) && body.acknowledged !== true) {
-          throw new HttpError(409, 'acknowledgement_required', 'Confirm the warning before switching on a risky tool.');
+        if (enabled && (NEEDS_APPROVAL.includes(tool.effect) || tool.codeOnly) && body.acknowledged !== true) {
+          throw new HttpError(409, 'acknowledgement_required', 'Confirm the warning before switching on this tool.');
         }
         await store.setSlotEnabled(appId, profileName, slot, enabled);
         return send(res, 200, await appDetail(appId, profileName, ownOrigin));

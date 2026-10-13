@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { Adapter, Logger, NetworkLog, OperationCandidate } from '@taurus/adapter-sdk';
+import { candidatesFromFindings, type AnalysisFindings } from './analysis.js';
 import { classify } from './classify.js';
-import type { AppModel, Binder, Operation } from './model.js';
+import type { AnalysisSummary, AppModel, Binder, Operation } from './model.js';
 
 export interface CompileOptions {
   appId: string;
@@ -9,6 +10,8 @@ export interface CompileOptions {
   adapters: Adapter[];
   binders: Binder[];
   network?: NetworkLog;
+  /** Findings from optional analysis sources. Traffic capture wins wherever both saw the same endpoint. */
+  analysis?: AnalysisFindings[];
   log?: Logger;
 }
 
@@ -59,6 +62,34 @@ export async function compile(options: CompileOptions): Promise<AppModel> {
     log.info(`${adapter.id}: ${contribution.operations.length} operation candidates`);
   }
 
+  const observed = new Set(
+    [...candidates.values()].map(({ candidate }) => {
+      const binding = candidate.execution.binding as { method?: string; pathTemplate?: string } | null;
+      return `${binding?.method?.toUpperCase() ?? ''} ${binding?.pathTemplate ?? ''}`;
+    }),
+  );
+  const analysis: AnalysisSummary[] = [];
+  const declaredTools: NonNullable<AppModel['declaredTools']> = [];
+  for (const findings of options.analysis ?? []) {
+    const added = candidatesFromFindings(findings, observed);
+    for (const candidate of added) {
+      candidates.set(`analysis:${findings.source}:${candidate.key}`, { adapterId: `analysis:${findings.source}`, candidate });
+    }
+    for (const tool of findings.declaredTools) declaredTools.push({ ...tool, source: findings.source });
+    analysis.push({
+      source: findings.source,
+      sourceVersion: findings.sourceVersion,
+      at: findings.at,
+      endpointsFound: findings.endpoints.length,
+      newOperations: added.length,
+      declaredTools: findings.declaredTools.length,
+      limitations: findings.limitations,
+    });
+    log.info(
+      `${findings.source}: ${findings.endpoints.length} endpoints in code, ${added.length} not seen in traffic, ${findings.declaredTools.length} declared tools`,
+    );
+  }
+
   const operations: Operation[] = [...candidates.values()].map(({ adapterId, candidate }) => ({
     id: `op.${slug(candidate.key)}`,
     key: candidate.key,
@@ -83,6 +114,8 @@ export async function compile(options: CompileOptions): Promise<AppModel> {
     },
     operations,
     bindings: [],
+    ...(declaredTools.length ? { declaredTools } : {}),
+    ...(analysis.length ? { analysis } : {}),
   };
 
   for (const binder of options.binders) {

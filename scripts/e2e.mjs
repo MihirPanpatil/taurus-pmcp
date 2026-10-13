@@ -1,6 +1,7 @@
 // End-to-end check of the walking skeleton, through the real Electron shell:
 // fixture app -> shell capture (exercise.js) -> compile -> verify -> MCP gateway -> MCP client.
-// Needs a display (on Linux CI, run it under xvfb-run).
+// Needs a display (on Linux CI, run it under xvfb-run). Set TAURUS_E2E_REA=1 to also run the optional REA analysis
+// source (REA must be installed: npm install --global rea-agents).
 import { spawn } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -16,6 +17,7 @@ import { startFixture } from '../fixtures/todo-app/server.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const appId = 'todo-e2e';
+const withRea = process.env.TAURUS_E2E_REA === '1';
 const dataDir = await mkdtemp(join(tmpdir(), 'taurus-e2e-'));
 const fixture = await startFixture(0);
 let gateway;
@@ -31,7 +33,18 @@ try {
   const code = await new Promise((resolve) => {
     const child = spawn(
       process.execPath,
-      ['packages/cli/dist/index.js', 'compile', `${fixture.url}/`, '--app-id', appId, '--exercise', 'fixtures/todo-app/exercise.js', '--data-dir', dataDir],
+      [
+        'packages/cli/dist/index.js',
+        'compile',
+        `${fixture.url}/`,
+        '--app-id',
+        appId,
+        '--exercise',
+        'fixtures/todo-app/exercise.js',
+        '--data-dir',
+        dataDir,
+        ...(withRea ? ['--analyze', 'rea'] : []),
+      ],
       { cwd: root, stdio: 'inherit' },
     );
     child.on('exit', (c) => resolve(c ?? 1));
@@ -42,6 +55,12 @@ try {
   const model = await store.loadModel(appId);
   const verification = model.verification?.[0];
   check(verification?.failed === 0 && verification?.passed === 7, `conformance ${verification?.passed ?? 0}/7 passed`);
+
+  if (withRea) {
+    const stats = model.operations.find((o) => o.nameHint === 'GET /api/stats');
+    check(stats?.evidence.seen === 'code-only', 'REA found GET /api/stats in code (never used by the exercise)');
+    check(model.declaredTools?.some((t) => t.name === 'count_open_tasks') === true, 'REA found the WebMCP declaration');
+  }
 
   const runtime = new Runtime({ store, adapters: [restObserver], schemas: SCHEMAS });
   gateway = await startGateway({ runtime, store, port: 0 });

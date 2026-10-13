@@ -129,6 +129,24 @@ The compiler must not damage the user's real data while it learns.
 
 Features behind other plans, roles or feature flags may never appear in one user's session. Adapters that read the site's code can still surface them as `seen: code-only`. They are shown in the monitor as untested and stay disabled by default.
 
+### 3.4 Optional analysis sources
+
+An **analysis source** is a separate local tool that looks at the app's code from outside the adapter sandbox. Adapters may not contact anything outside the app's own site, so tools like this can't be adapters. They are opt-in per compile (`taurus compile … --analyze <source>`), and Taurus works the same without them.
+
+**First source: REA** ([morluto/rea](https://github.com/morluto/rea), MIT, installed separately with `npm install --global rea-agents`).
+
+| Step | What happens |
+|---|---|
+| Attach | The shell opens a **loopback-only** CDP port on a random free port, for this compile only, and passes REA the page's exact target id. |
+| Analyze | Taurus runs `rea analyze-web-bundle` and `rea discover-webmcp-tools`. REA parses the page's JavaScript without executing it. **Source maps are not fetched**, which is the only network request REA would make. |
+| Reduce | Endpoints become path templates with parameter names. Literal IDs, query values and other origins are dropped. Page-declared WebMCP names and descriptions are cleaned, length-capped and marked untrusted. |
+| Merge | Endpoints traffic capture already saw are skipped, so **observed always wins**. The rest become `code-only` candidates. Calls that don't name their method (`fetch`, XHR) get at least a `write` risk rating. Binders prefer observed operations. |
+| Expose | Code-only tools are **off by default**. Switching one on in the monitor shows a "never seen working" warning first. Declared WebMCP tools are recorded and shown, but not offered to agents yet. |
+
+**Measured on the level 0 fixture:** REA found the one endpoint that only a literal `fetch` reaches (`/api/stats`), plus the page's static WebMCP declaration. It doesn't see URLs that are built from variables or passed through wrapper functions, so traffic capture stays the primary source. A WebMCP tool registered at run time isn't visible either, because Electron doesn't expose `navigator.modelContext` to pages by default.
+
+**Possible later uses:** REA's comparison tools (`compare-web-captures`, `compare-bundles`) could help detect site updates (section 6).
+
 ---
 
 ## 4. PMCP bundle
@@ -249,6 +267,8 @@ Data returned from a site (messages, comments, documents) is labeled **untrusted
 | Threat | Mitigation |
 |---|---|
 | Malicious adapter | Permission declarations, sandbox, no network access outside the target site, no access to credentials, signing and review levels (see ADAPTER_SPEC) |
+| Another local process attaching while an analysis source has CDP open | Opt-in only, loopback only, random port, closed when the compile ends |
+| A page planting misleading tool names for analysis to find | Page-declared text is cleaned, capped and marked untrusted; code-only tools stay off and are never seen as verified |
 | Hostile website shaping the tools it exposes | Behavior-based ratings, rule floors, approval queue for new tools |
 | Prompt injection through site content | Untrusted labels, approval after untrusted reads, confirmations for risky actions |
 | A local web page attacking the gateway | Loopback only, bearer tokens, `Origin` rejection |

@@ -83,6 +83,8 @@ describe('monitor data', () => {
     expect(detail.endpoint).toBe(`${gateway.url}/pmcp/todo-monitor/default/mcp`);
     expect(detail.tools.every((t: { tokens: number }) => t.tokens > 0)).toBe(true);
     expect(detail.enabledTokens).toBeGreaterThan(0);
+    // No analysis source ran for this compile, so nothing was found in code.
+    expect(detail.found).toEqual({ sources: [], operations: [], declaredTools: [] });
   });
 
   it('holds a risky call until it is approved in the monitor', async () => {

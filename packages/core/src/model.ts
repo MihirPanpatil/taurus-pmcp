@@ -1,4 +1,5 @@
 import type { Effect, Evidence, ExecutionSpec, JSONSchema, Json, SourceRef } from '@taurus/adapter-sdk';
+import type { DeclaredTool } from './analysis.js';
 
 export type PlatformRisk = 'low' | 'medium' | 'high';
 
@@ -84,6 +85,20 @@ export interface AppModel {
   operations: Operation[];
   bindings: CapabilityBinding[];
   verification?: Verification[];
+  /** Tools the page declares about itself (WebMCP). Recorded and shown; not exposed to agents yet. */
+  declaredTools?: (DeclaredTool & { source: string })[];
+  /** Which optional analysis sources ran during this compile, and what they added. */
+  analysis?: AnalysisSummary[];
+}
+
+export interface AnalysisSummary {
+  source: string;
+  sourceVersion?: string;
+  at: string;
+  endpointsFound: number;
+  newOperations: number;
+  declaredTools: number;
+  limitations: string[];
 }
 
 export interface Binder {

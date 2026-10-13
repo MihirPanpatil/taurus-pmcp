@@ -3,6 +3,7 @@ import { appendFile, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { NetworkShape } from '@taurus/adapter-sdk';
+import type { AnalysisFindings } from './analysis.js';
 import type { AppModel } from './model.js';
 
 export interface Profile {
@@ -31,6 +32,13 @@ export interface AuditEntry {
   ok: boolean;
   error?: string;
   ms: number;
+}
+
+export interface SavedCapture {
+  origin: string;
+  capturedAt: string;
+  shapes: NetworkShape[];
+  analysis?: AnalysisFindings[];
 }
 
 const APP_ID = /^[a-z0-9][a-z0-9-]{0,62}$/;
@@ -131,16 +139,14 @@ export class PmcpStore {
   }
 
   /** Saves the shapes from a compile session so the app can be recompiled without browsing it again. */
-  async saveCapture(appId: string, origin: string, shapes: NetworkShape[]): Promise<void> {
+  async saveCapture(appId: string, origin: string, shapes: NetworkShape[], analysis: AnalysisFindings[] = []): Promise<void> {
     const dir = join(this.appDir(appId), 'captures');
     await mkdir(dir, { recursive: true });
-    await writeJson(join(dir, 'latest.json'), { origin, capturedAt: new Date().toISOString(), shapes });
+    await writeJson(join(dir, 'latest.json'), { origin, capturedAt: new Date().toISOString(), shapes, analysis });
   }
 
-  async loadCapture(appId: string): Promise<{ origin: string; capturedAt: string; shapes: NetworkShape[] }> {
-    const capture = await readJson<{ origin: string; capturedAt: string; shapes: NetworkShape[] }>(
-      join(this.appDir(appId), 'captures', 'latest.json'),
-    );
+  async loadCapture(appId: string): Promise<SavedCapture> {
+    const capture = await readJson<SavedCapture>(join(this.appDir(appId), 'captures', 'latest.json'));
     if (!capture) throw new Error(`no saved capture for "${appId}"`);
     return capture;
   }

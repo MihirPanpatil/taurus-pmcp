@@ -1,0 +1,81 @@
+{
+  "evidence_id": "ev_13d10ae6184e491e6bf9b2be195b7c4c4de648490eab91544597b992006eb479",
+  "subject": null,
+  "provider": {
+    "id": "rea-cdp-browser",
+    "name": "REA Chrome DevTools Protocol observation provider",
+    "version": "2"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.webmcp-discovery",
+  "operation": "discover_webmcp_tools",
+  "parameters": {
+    "cdp_endpoint": "http://127.0.0.1:9334",
+    "allowed_origins": [
+      "http://127.0.0.1:9334"
+    ],
+    "target_id": "E45C9DE5B58AD00547AD2E4F7C942B03",
+    "observation_ms": 1000
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "product": "Chrome/152.0.7977.130",
+      "protocol_version": "1.3",
+      "revision": "537.36 (@58da080b2b7c38a02e066a911d0b9cd0e9daa70d)",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) @taurus/shell/0.0.1 Chrome/152.0.7977.130 Electron/44.7.0 Safari/537.36",
+      "js_version": "15.2.124.28"
+    },
+    "target": {
+      "target_id": "E45C9DE5B58AD00547AD2E4F7C942B03",
+      "url": "http://127.0.0.1:9334/",
+      "origin": "http://127.0.0.1:9334"
+    },
+    "status": "available",
+    "tools": {
+      "total": 0,
+      "items": []
+    },
+    "completeness": {
+      "status": "complete_within_window",
+      "conditions": [
+        "complete_within_window"
+      ],
+      "policy_filtered_sections": [],
+      "attach_limited_sections": [],
+      "truncated_sections": [],
+      "unavailable_sections": [],
+      "excluded": [],
+      "dropped_events": {
+        "scripts": 0,
+        "network_requests": 0,
+        "console_events": 0,
+        "websocket_connections": 0,
+        "websocket_frames": 0,
+        "webmcp_tools": 0,
+        "timeline_events": 0,
+        "total": 0
+      }
+    },
+    "limitations": [
+      "Page-declared tool metadata is untrusted and is never registered or invoked by REA.",
+      "Discovery uses only WebMCP.enable and toolsAdded/toolsRemoved; WebMCP.invokeTool is never called."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "external-service",
+  "environment": {
+    "id": "Chrome/152.0.7977.130@537.36 (@58da080b2b7c38a02e066a911d0b9cd0e9daa70d)",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "none"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Page-declared tool metadata is untrusted and is never registered or invoked by REA.",
+    "Discovery uses only WebMCP.enable and toolsAdded/toolsRemoved; WebMCP.invokeTool is never called.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "locations": [],
+  "evidence_links": []
+}

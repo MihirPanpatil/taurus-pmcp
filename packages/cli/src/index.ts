@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import restObserver from '@taurus/adapter-rest-observer';
+import { reaSource } from '@taurus/analysis-rea';
 import { BINDERS, SCHEMAS, verifyApp } from '@taurus/capabilities';
 import { EventEmitter } from 'node:events';
 import { ApprovalBroker, compile, consoleLogger, PmcpStore, Runtime, ShapeAggregator, type AppModel } from '@taurus/core';
@@ -23,8 +24,10 @@ Usage: taurus <command> [options]
       --show                     Show the window while an exercise runs
       --no-verify                Skip the conformance suite
       --verbose                  Log requests that were seen but not kept
+      --analyze rea              Also look for tools in the app's code with REA (optional, must be installed)
       --cdp-port <n>             Development only: expose the session over CDP on 127.0.0.1
   recompile <appId>             Compile again from the last saved capture (no browsing)
+  sources                       Show which optional analysis sources are installed
   verify <appId>                Run the conformance suite in a scratch project
   apps                          List compiled apps
   tools <appId> [--profile p]   List tools with their effect, state and confidence
@@ -43,7 +46,7 @@ function option(args: string[], name: string): string | undefined {
 
 function positional(args: string[]): string[] {
   const out: string[] = [];
-  const valued = new Set(['--app-id', '--exercise', '--profile', '--port', '--data-dir', '--cdp-port']);
+  const valued = new Set(['--app-id', '--exercise', '--profile', '--port', '--data-dir', '--cdp-port', '--analyze']);
   for (let i = 0; i < args.length; i++) {
     if (valued.has(args[i])) i++;
     else if (!args[i].startsWith('--')) out.push(args[i]);
@@ -101,7 +104,7 @@ async function main(argv: string[]): Promise<number> {
       const appId = option(rest, 'app-id');
       if (!url || !appId) throw new Error('usage: taurus compile <url> --app-id <id>');
       const shellArgs = ['--url', url, '--app-id', appId];
-      for (const name of ['exercise', 'data-dir', 'cdp-port']) {
+      for (const name of ['exercise', 'data-dir', 'cdp-port', 'analyze']) {
         const value = option(rest, name);
         if (value) shellArgs.push(`--${name}`, value);
       }
@@ -119,10 +122,21 @@ async function main(argv: string[]): Promise<number> {
         adapters: ADAPTERS,
         binders: BINDERS,
         network: ShapeAggregator.fromShapes(capture.origin, capture.shapes),
+        analysis: capture.analysis ?? [],
         log: consoleLogger,
       });
       await store.saveModel(model);
       if (!rest.includes('--no-verify')) printVerification(await verifyApp(appId, { store, adapters: ADAPTERS }));
+      return 0;
+    }
+
+    case 'sources': {
+      const rea = await reaSource().available();
+      console.log(
+        rea.ok
+          ? `rea      installed (${rea.version}). Use: taurus compile <url> --app-id <id> --analyze rea`
+          : `rea      not available (${rea.reason}). Install it with: npm install --global rea-agents`,
+      );
       return 0;
     }
 

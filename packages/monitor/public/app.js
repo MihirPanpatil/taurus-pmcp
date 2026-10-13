@@ -346,6 +346,7 @@ function renderTools(detail) {
         null,
         h('span', { class: `effect ${tool.effect}` }, EFFECT_LABEL[tool.effect] ?? tool.effect),
         risky ? h('span', { class: 'asks' }, 'Asks you every time') : null,
+        tool.codeOnly ? h('span', { class: 'asks' }, 'Found in code, not tested') : null,
       ),
       h(
         'td',
@@ -538,6 +539,47 @@ function renderConnect(detail) {
   );
 }
 
+function renderFound(detail) {
+  const found = detail.found ?? { sources: [], operations: [], declaredTools: [] };
+  const source = found.sources[found.sources.length - 1];
+  const note = source
+    ? `Found by ${source.source}${source.sourceVersion ? ` ${source.sourceVersion}` : ''} ${ago(source.at)}. Agents don't see these until they're tested or you switch them on.`
+    : 'Compile with --analyze rea to also look for tools in the app\'s code that you haven\'t used yet.';
+  const items = [
+    ...found.operations.map((op) =>
+      h(
+        'li',
+        null,
+        h('span', { class: `step-status ${op.risk === 'read' ? 'passed' : 'skipped'}` }, EFFECT_LABEL[op.risk] ?? op.risk),
+        h('span', null, h('code', null, op.name), h('span', { class: 'step-detail' }, 'Endpoint in the code, never seen working')),
+      ),
+    ),
+    ...found.declaredTools.map((tool) =>
+      h(
+        'li',
+        null,
+        h('span', { class: 'step-status skipped' }, 'Declared'),
+        h(
+          'span',
+          null,
+          h('code', null, tool.name),
+          h(
+            'span',
+            { class: 'step-detail' },
+            `${tool.description ? `${tool.description} ` : ''}Declared by the page itself (WebMCP${tool.mechanism === 'webmcp-static' ? ', seen in code' : ''}). Not offered to agents yet.`,
+          ),
+        ),
+      ),
+    ),
+  ];
+  return h(
+    'section',
+    { class: 'panel', 'aria-labelledby': 'found-title' },
+    h('div', { class: 'panel-head' }, h('h2', { id: 'found-title' }, "Found in the app's code"), h('p', { class: 'panel-note' }, note)),
+    items.length ? h('ul', { class: 'steps' }, items) : h('p', { class: 'empty' }, source ? 'Nothing new beyond what Taurus already saw the app do.' : 'No code analysis has run for this app.'),
+  );
+}
+
 function renderView() {
   const view = $('#view');
   const detail = state.detail;
@@ -546,6 +588,7 @@ function renderView() {
     renderHeader(detail),
     h('div', { class: 'columns' }, renderTools(detail), renderActivity()),
     h('div', { class: 'columns' }, renderConnect(detail), renderChecks(detail)),
+    renderFound(detail),
   );
 }
 
@@ -616,12 +659,14 @@ async function loadApp() {
 async function toggleTool(tool, button) {
   const enabling = !tool.enabled;
   let acknowledged = false;
-  if (enabling && tool.needsApproval) {
-    const ok = await confirmDialog(
-      `Switch on "${slotWords(tool.slot)}"?`,
-      `${RISK_WARNING[tool.effect] ?? 'This tool is risky.'} Taurus will still ask you before every call. Automating this on a third-party site can break the site's rules, and the site may restrict or close your account.`,
-      'Switch on',
-    );
+  if (enabling && (tool.needsApproval || tool.codeOnly)) {
+    const parts = [];
+    if (tool.codeOnly) parts.push("Taurus found this tool in the app's code but has never seen it work, so it may fail or do something unexpected.");
+    if (tool.needsApproval) {
+      parts.push(`${RISK_WARNING[tool.effect] ?? 'This tool is risky.'} Taurus will still ask you before every call.`);
+      parts.push("Automating this on a third-party site can break the site's rules, and the site may restrict or close your account.");
+    }
+    const ok = await confirmDialog(`Switch on "${slotWords(tool.slot)}"?`, parts.join(' '), 'Switch on');
     if (!ok) return;
     acknowledged = true;
   }

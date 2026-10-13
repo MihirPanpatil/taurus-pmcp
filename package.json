@@ -27,6 +27,7 @@
     "@taurus/adapter-rest-observer": "workspace:*",
     "@taurus/gateway": "workspace:*",
     "@modelcontextprotocol/sdk": "1.32.1",
-    "@taurus/monitor": "workspace:*"
+    "@taurus/monitor": "workspace:*",
+    "@taurus/analysis-rea": "workspace:*"
   }
 }

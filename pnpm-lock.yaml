@@ -17,6 +17,9 @@ importers:
       '@taurus/adapter-sdk':
         specifier: workspace:*
         version: link:packages/adapter-sdk
+      '@taurus/analysis-rea':
+        specifier: workspace:*
+        version: link:packages/analysis-rea
       '@taurus/capabilities':
         specifier: workspace:*
         version: link:packages/capabilities
@@ -47,6 +50,15 @@ importers:
 
   packages/adapter-sdk: {}
 
+  packages/analysis-rea:
+    dependencies:
+      '@taurus/adapter-sdk':
+        specifier: workspace:*
+        version: link:../adapter-sdk
+      '@taurus/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/capabilities:
     dependencies:
       '@taurus/adapter-sdk':
@@ -61,6 +73,9 @@ importers:
       '@taurus/adapter-rest-observer':
         specifier: workspace:*
         version: link:../../adapters/rest-observer
+      '@taurus/analysis-rea':
+        specifier: workspace:*
+        version: link:../analysis-rea
       '@taurus/capabilities':
         specifier: workspace:*
         version: link:../capabilities
@@ -118,6 +133,9 @@ importers:
       '@taurus/adapter-sdk':
         specifier: workspace:*
         version: link:../adapter-sdk
+      '@taurus/analysis-rea':
+        specifier: workspace:*
+        version: link:../analysis-rea
       '@taurus/capabilities':
         specifier: workspace:*
         version: link:../capabilities

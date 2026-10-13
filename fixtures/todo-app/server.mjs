@@ -84,6 +84,12 @@ export function createApp() {
       return send(res, 201, task);
     }
 
+    if (parts[1] === 'stats' && parts.length === 2 && method === 'GET') {
+      const projectId = url.searchParams.get('projectId');
+      const tasks = projectId ? db.tasks.filter((t) => t.projectId === Number(projectId)) : db.tasks;
+      return send(res, 200, { open: tasks.filter((t) => !t.done).length, done: tasks.filter((t) => t.done).length });
+    }
+
     if (parts[1] === 'tasks' && parts.length === 2 && method === 'GET') {
       let tasks = db.tasks;
       const projectId = url.searchParams.get('projectId');

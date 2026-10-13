@@ -12,6 +12,8 @@ export interface ToolDef {
   schema: string;
   tier: SlotDef['tier'];
   effect: Effect;
+  /** Found in the app's code by an analysis source, never seen working. */
+  codeOnly: boolean;
   description: string;
   inputSchema: JSONSchema;
 }
@@ -247,7 +249,8 @@ export class Runtime {
   private isEnabled(entry: Entry, profile: Profile): boolean {
     if (profile.disabled?.includes(entry.slotDef.name)) return false;
     if (profile.enabled?.includes(entry.slotDef.name)) return true;
-    return ON_BY_DEFAULT.includes(entry.effect);
+    // Code-only tools stay off until the user switches them on (ARCHITECTURE 3.3).
+    return ON_BY_DEFAULT.includes(entry.effect) && entry.op.evidence.seen === 'observed';
   }
 
   private toolDef(entry: Entry): ToolDef {
@@ -256,7 +259,9 @@ export class Runtime {
     const required = [...new Set([...(entry.slotDef.input.required ?? []), ...(entry.binding.requires ?? [])])].filter(
       (field) => field in properties,
     );
+    const codeOnly = entry.op.evidence.seen !== 'observed';
     const notes: string[] = [];
+    if (codeOnly) notes.push("Found in the app's code but never seen working, so it may fail.");
     if (NEEDS_APPROVAL.includes(entry.effect)) notes.push("Needs the user's confirmation on every call.");
     if (entry.binding.localFilters?.length) notes.push(`Taurus applies these filters itself: ${entry.binding.localFilters.join(', ')}.`);
     return {
@@ -265,6 +270,7 @@ export class Runtime {
       schema: entry.schema.id,
       tier: entry.slotDef.tier,
       effect: entry.effect,
+      codeOnly,
       description: [entry.slotDef.description, ...notes].join(' '),
       inputSchema: { type: 'object', properties, required, additionalProperties: false },
     };

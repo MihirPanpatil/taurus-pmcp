@@ -68,7 +68,12 @@ function find(props: Record<string, unknown> | undefined, names: string[]): stri
 function choose(routes: Route[], test: (r: Route) => boolean): Route | undefined {
   return routes
     .filter(test)
-    .sort((a, b) => a.params.length - b.params.length || (b.op.evidence.observations ?? 0) - (a.op.evidence.observations ?? 0))[0];
+    .sort(
+      (a, b) =>
+        Number(a.op.evidence.seen !== 'observed') - Number(b.op.evidence.seen !== 'observed') ||
+        a.params.length - b.params.length ||
+        (b.op.evidence.observations ?? 0) - (a.op.evidence.observations ?? 0),
+    )[0];
 }
 
 /** The item schema of a response, and where the array lives if the response wraps it. */

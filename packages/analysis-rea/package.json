@@ -1,0 +1,21 @@
+{
+  "name": "@taurus/analysis-rea",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Optional analysis source backed by REA, a local reverse-engineering tool.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*",
+    "@taurus/core": "workspace:*"
+  }
+}
