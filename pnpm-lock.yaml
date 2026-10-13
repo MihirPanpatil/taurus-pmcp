@@ -26,6 +26,9 @@ importers:
       '@taurus/gateway':
         specifier: workspace:*
         version: link:packages/gateway
+      '@taurus/monitor':
+        specifier: workspace:*
+        version: link:packages/monitor
       '@types/node':
         specifier: ^22.19.0
         version: 22.20.5
@@ -67,6 +70,9 @@ importers:
       '@taurus/gateway':
         specifier: workspace:*
         version: link:../gateway
+      '@taurus/monitor':
+        specifier: workspace:*
+        version: link:../monitor
       '@taurus/shell':
         specifier: workspace:*
         version: link:../shell
@@ -88,6 +94,21 @@ importers:
       '@taurus/core':
         specifier: workspace:*
         version: link:../core
+
+  packages/monitor:
+    dependencies:
+      '@taurus/adapter-sdk':
+        specifier: workspace:*
+        version: link:../adapter-sdk
+      '@taurus/capabilities':
+        specifier: workspace:*
+        version: link:../capabilities
+      '@taurus/core':
+        specifier: workspace:*
+        version: link:../core
+      '@taurus/gateway':
+        specifier: workspace:*
+        version: link:../gateway
 
   packages/shell:
     dependencies:

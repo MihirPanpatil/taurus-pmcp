@@ -1,9 +1,10 @@
+import type { EventEmitter } from 'node:events';
 import type { Adapter, Effect, ExecContext, HttpRequest, HttpResult, JSONSchema, Json, Logger } from '@taurus/adapter-sdk';
 import { maxEffect } from './classify.js';
 import { silentLogger } from './compiler.js';
 import type { AppModel, CapabilitySchema, Operation, SlotBinding, SlotDef } from './model.js';
 import { RateLimiter } from './rate-limiter.js';
-import type { PmcpStore, Profile } from './store.js';
+import type { AuditEntry, PmcpStore, Profile } from './store.js';
 
 export interface ToolDef {
   name: string;
@@ -63,6 +64,12 @@ export interface RuntimeOptions {
   log?: Logger;
   /** In-memory profiles that are never written to disk, e.g. the Verify stage's own profile. */
   extraProfiles?: Profile[];
+  /** Receives a `call` event after every tool call, e.g. for the monitor's live activity. */
+  events?: EventEmitter;
+}
+
+export interface CallEvent extends AuditEntry {
+  appId: string;
 }
 
 /** Effects that are off by default and need confirmation on every call (ARCHITECTURE 7.3). */
@@ -295,17 +302,17 @@ export class Runtime {
           ? { ok: false, error: error.error }
           : fail('internal_error', error instanceof Error ? error.message : String(error));
     }
-    await this.options.store
-      .appendAudit(appId, {
-        at: new Date().toISOString(),
-        profile: profileName,
-        tool,
-        effect,
-        ok: result.ok,
-        error: result.error?.code,
-        ms: Date.now() - started,
-      })
-      .catch(() => {});
+    const entry: AuditEntry = {
+      at: new Date().toISOString(),
+      profile: profileName,
+      tool,
+      effect,
+      ok: result.ok,
+      ...(result.error ? { error: result.error.code } : {}),
+      ms: Date.now() - started,
+    };
+    await this.options.store.appendAudit(appId, entry).catch(() => {});
+    this.options.events?.emit('call', { appId, ...entry } satisfies CallEvent);
     return result;
   }
 

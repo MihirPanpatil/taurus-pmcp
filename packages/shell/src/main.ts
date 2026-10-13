@@ -34,6 +34,7 @@ interface ShellArgs {
   show: boolean;
   verify: boolean;
   verbose: boolean;
+  cdpPort?: number;
   dataDir?: string;
 }
 
@@ -55,6 +56,7 @@ function parseArgs(argv: string[]): ShellArgs {
     show: flag('show'),
     verify: !flag('no-verify'),
     verbose: flag('verbose'),
+    cdpPort: value('cdp-port') ? Number(value('cdp-port')) : undefined,
     dataDir: value('data-dir'),
   };
 }
@@ -141,7 +143,13 @@ let args: ShellArgs;
 try {
   args = parseArgs(process.argv);
   // Browser profiles (cookies, storage) live with the rest of the Taurus data, one partition per app.
-  app.setPath('userData', join(args.dataDir ?? defaultDataDir(), 'browser'));
+  app.setPath('userData', join(resolve(args.dataDir ?? defaultDataDir()), 'browser'));
+  // Development only: lets local analysis tools (e.g. a reverse-engineering MCP server) attach over CDP.
+  // Any local process could attach while it's open, so it is loopback-only and never on by default.
+  if (args.cdpPort) {
+    app.commandLine.appendSwitch('remote-debugging-address', '127.0.0.1');
+    app.commandLine.appendSwitch('remote-debugging-port', String(args.cdpPort));
+  }
 } catch (error) {
   write(`[taurus] error: ${error instanceof Error ? error.message : String(error)}`);
   app.exit(1);

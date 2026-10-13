@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taurus Monitor</title>
+    <meta name="description" content="Approve risky tool calls and see what your agents can do in each compiled app." />
+    <meta name="theme-color" content="#18212F" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="rail">
+        <div class="brand">
+          <img src="icon.svg" alt="" width="28" height="28" />
+          <span>Taurus</span>
+        </div>
+        <nav aria-label="Compiled apps">
+          <h2 class="rail-title">Apps</h2>
+          <ul id="app-list" class="app-list"></ul>
+        </nav>
+        <div class="rail-foot">
+          <p id="connection" class="connection" role="status">Connecting</p>
+          <button id="alerts" class="quiet" type="button" hidden>Turn on approval alerts</button>
+        </div>
+      </aside>
+      <main id="main">
+        <section id="approvals" class="approvals" aria-label="Waiting for your approval" aria-live="assertive" hidden></section>
+        <div id="view" class="view"></div>
+      </main>
+    </div>
+
+    <dialog id="confirm" class="confirm" aria-labelledby="confirm-title">
+      <form method="dialog">
+        <h2 id="confirm-title"></h2>
+        <p id="confirm-body"></p>
+        <div class="confirm-actions">
+          <button value="cancel" class="quiet">Cancel</button>
+          <button value="ok" id="confirm-ok" class="primary danger">Switch on</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

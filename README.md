@@ -26,7 +26,15 @@ pnpm taurus tools todo-fixture
 pnpm taurus serve
 ```
 
-`compile` opens the app in its own Electron session, records its traffic as shapes (never values), compiles a PMCP, and runs the `tasks` conformance suite in a scratch project. Use `--record` instead of `--exercise` to click through the app yourself. `serve` exposes every PMCP at `http://127.0.0.1:7777/pmcp/<app-id>/<profile>/mcp`. Get the bearer token with `pnpm taurus token todo-fixture`.
+`compile` opens the app in its own Electron session, records its traffic as shapes (never values), compiles a PMCP, and runs the `tasks` conformance suite in a scratch project. Use `--record` instead of `--exercise` to click through the app yourself. `serve` exposes every PMCP at `http://127.0.0.1:7777/pmcp/<app-id>/<profile>/mcp`.
+
+`serve` also prints a link to the **monitor**, a PWA at `http://127.0.0.1:7777/monitor/`. Open it to:
+- approve or deny risky tool calls while the agent waits;
+- switch tools on and off per profile, and see how many tokens their descriptions cost;
+- watch calls as they happen, and re-run the checks;
+- copy the endpoint, token or a ready-made `claude mcp add` command to connect an agent.
+
+The monitor loads nothing from outside your machine, and its API needs the token from that link.
 
 Run the checks:
 
@@ -44,9 +52,10 @@ pnpm e2e
 | Electron shell with an isolated session per app, and network capture reduced to shapes | Working |
 | `rest-observer` adapter, compiler, rule-based risk floors | Working |
 | `tasks` binder (name-based) and conformance suite | Working, core tier plus `project.create` and `task.delete` |
-| Runtime: profiles, validation, approvals, per-site rate limits, own-site-only requests, audit log | Working. Approvals have no UI yet, so risky tools answer `approval_required`. |
+| Runtime: profiles, validation, approvals, per-site rate limits, own-site-only requests, audit log | Working |
 | MCP gateway: loopback only, bearer token per profile, browser origins rejected | Working |
-| Monitor PWA, workflows, watches, LLM-assisted binding, other adapters | Not started |
+| Monitor PWA: approvals, tool toggles with token costs, live calls, checks, agent connection | Working. Change feed, rate budgets and the connection ledger are not built yet. |
+| Workflows, watches, LLM-assisted binding, other adapters | Not started |
 
 ### Repository layout
 
@@ -55,6 +64,7 @@ packages/adapter-sdk     Types for adapters (docs/ADAPTER_SPEC.md)
 packages/core            Shape capture, compiler, app model, PMCP store, runtime, rate limits
 packages/capabilities    Capability schemas, binders and conformance suites (tasks)
 packages/gateway         MCP server over Streamable HTTP
+packages/monitor         Monitor PWA and its API, served by the gateway
 packages/shell           Electron shell: app sessions and network capture
 packages/cli             The `taurus` command
 adapters/rest-observer   Turns observed REST traffic into operations

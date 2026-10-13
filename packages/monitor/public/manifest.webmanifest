@@ -1,0 +1,12 @@
+{
+  "name": "Taurus Monitor",
+  "short_name": "Taurus",
+  "description": "Approve risky tool calls and see what your agents can do in each compiled app.",
+  "id": "/monitor/",
+  "start_url": "/monitor/",
+  "scope": "/monitor/",
+  "display": "standalone",
+  "background_color": "#EEF1F4",
+  "theme_color": "#18212F",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

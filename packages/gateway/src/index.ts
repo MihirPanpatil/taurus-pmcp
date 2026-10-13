@@ -7,6 +7,12 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import type { Json } from '@taurus/adapter-sdk';
 import type { PmcpStore, Runtime } from '@taurus/core';
 
+/**
+ * Handles extra routes on the gateway's origin, e.g. the monitor. Runs after the host check and before the MCP
+ * routes' origin check, so it must do its own authentication. Resolves true if it handled the request.
+ */
+export type GatewayExtension = (req: IncomingMessage, res: ServerResponse, url: URL, ownOrigin: string) => Promise<boolean>;
+
 export interface GatewayOptions {
   runtime: Runtime;
   store: PmcpStore;
@@ -15,6 +21,7 @@ export interface GatewayOptions {
   /** Web origins allowed to call the gateway. Empty by default: requests from web pages are rejected. */
   allowedOrigins?: string[];
   version?: string;
+  extensions?: GatewayExtension[];
 }
 
 export interface Gateway {
@@ -56,6 +63,10 @@ export async function startGateway(options: GatewayOptions): Promise<Gateway> {
     if (![`${HOST}:${port}`, `localhost:${port}`, `[::1]:${port}`].includes(host)) {
       return json(res, 403, { error: 'forbidden_host' });
     }
+    for (const extension of options.extensions ?? []) {
+      if (await extension(req, res, url, `http://${HOST}:${port}`)) return;
+    }
+
     const origin = req.headers.origin;
     if (origin && !allowedOrigins.has(origin)) {
       return json(res, 403, {

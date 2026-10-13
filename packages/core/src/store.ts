@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { appendFile, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import type { NetworkShape } from '@taurus/adapter-sdk';
 import type { AppModel } from './model.js';
 
@@ -59,7 +59,11 @@ async function writeJson(path: string, value: unknown): Promise<void> {
 
 /** On-disk PMCP bundles (ARCHITECTURE section 4). */
 export class PmcpStore {
-  constructor(readonly dataDir: string = defaultDataDir()) {}
+  readonly dataDir: string;
+
+  constructor(dataDir: string = defaultDataDir()) {
+    this.dataDir = resolve(dataDir);
+  }
 
   appDir(appId: string): string {
     if (!APP_ID.test(appId)) throw new Error(`invalid app id "${appId}" (use lowercase letters, digits and dashes)`);
@@ -139,6 +143,58 @@ export class PmcpStore {
     );
     if (!capture) throw new Error(`no saved capture for "${appId}"`);
     return capture;
+  }
+
+  /** Switches a slot on or off for one profile. Risky tools still ask for confirmation on every call. */
+  async setSlotEnabled(appId: string, profileName: string, slot: string, enabled: boolean): Promise<Profile> {
+    const profiles = await this.getProfiles(appId);
+    const profile = profiles.find((p) => p.name === profileName);
+    if (!profile) throw new Error(`no profile "${profileName}" for "${appId}"`);
+    const on = new Set(profile.enabled ?? []);
+    const off = new Set(profile.disabled ?? []);
+    if (enabled) {
+      on.add(slot);
+      off.delete(slot);
+    } else {
+      off.add(slot);
+      on.delete(slot);
+    }
+    profile.enabled = [...on].sort();
+    profile.disabled = [...off].sort();
+    await this.saveProfiles(appId, profiles);
+    return profile;
+  }
+
+  /** The newest audit entries first. */
+  async readAudit(appId: string, limit = 50): Promise<AuditEntry[]> {
+    let text: string;
+    try {
+      text = await readFile(join(this.appDir(appId), 'audit.log'), 'utf8');
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
+      throw error;
+    }
+    const entries: AuditEntry[] = [];
+    const lines = text.trimEnd().split('\n');
+    for (let i = lines.length - 1; i >= 0 && entries.length < limit; i--) {
+      try {
+        entries.push(JSON.parse(lines[i]) as AuditEntry);
+      } catch {
+        // skip a partially written line
+      }
+    }
+    return entries;
+  }
+
+  /** Token for the monitor PWA. Kept across restarts so an installed monitor keeps working. */
+  async monitorToken(): Promise<string> {
+    const path = join(this.dataDir, 'monitor.json');
+    const existing = await readJson<{ token: string }>(path);
+    if (existing?.token) return existing.token;
+    const token = newToken();
+    await mkdir(this.dataDir, { recursive: true });
+    await writeJson(path, { token });
+    return token;
   }
 
   /** Records what was called and how it went. Inputs and outputs are not logged. */

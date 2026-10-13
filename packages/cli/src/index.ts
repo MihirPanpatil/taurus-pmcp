@@ -6,8 +6,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import restObserver from '@taurus/adapter-rest-observer';
 import { BINDERS, SCHEMAS, verifyApp } from '@taurus/capabilities';
-import { compile, consoleLogger, PmcpStore, Runtime, ShapeAggregator, type AppModel } from '@taurus/core';
+import { EventEmitter } from 'node:events';
+import { ApprovalBroker, compile, consoleLogger, PmcpStore, Runtime, ShapeAggregator, type AppModel } from '@taurus/core';
 import { DEFAULT_PORT, startGateway } from '@taurus/gateway';
+import { createMonitor } from '@taurus/monitor';
 
 const ADAPTERS = [restObserver];
 
@@ -21,6 +23,7 @@ Usage: taurus <command> [options]
       --show                     Show the window while an exercise runs
       --no-verify                Skip the conformance suite
       --verbose                  Log requests that were seen but not kept
+      --cdp-port <n>             Development only: expose the session over CDP on 127.0.0.1
   recompile <appId>             Compile again from the last saved capture (no browsing)
   verify <appId>                Run the conformance suite in a scratch project
   apps                          List compiled apps
@@ -28,7 +31,7 @@ Usage: taurus <command> [options]
   enable <appId> <slot>         Switch a tool on for a profile (risky tools still ask every time)
   disable <appId> <slot>        Switch a tool off for a profile
   token <appId> [--profile p]   Print the MCP endpoint and bearer token
-  serve [--port n]              Serve every PMCP over MCP on 127.0.0.1 (default ${DEFAULT_PORT})
+  serve [--port n]              Serve every PMCP over MCP on 127.0.0.1 (default ${DEFAULT_PORT}), plus the monitor
 
 Global: --data-dir <dir> (default: $TAURUS_DATA_DIR or ~/.taurus)`;
 
@@ -40,7 +43,7 @@ function option(args: string[], name: string): string | undefined {
 
 function positional(args: string[]): string[] {
   const out: string[] = [];
-  const valued = new Set(['--app-id', '--exercise', '--profile', '--port', '--data-dir']);
+  const valued = new Set(['--app-id', '--exercise', '--profile', '--port', '--data-dir', '--cdp-port']);
   for (let i = 0; i < args.length; i++) {
     if (valued.has(args[i])) i++;
     else if (!args[i].startsWith('--')) out.push(args[i]);
@@ -98,7 +101,7 @@ async function main(argv: string[]): Promise<number> {
       const appId = option(rest, 'app-id');
       if (!url || !appId) throw new Error('usage: taurus compile <url> --app-id <id>');
       const shellArgs = ['--url', url, '--app-id', appId];
-      for (const name of ['exercise', 'data-dir']) {
+      for (const name of ['exercise', 'data-dir', 'cdp-port']) {
         const value = option(rest, name);
         if (value) shellArgs.push(`--${name}`, value);
       }
@@ -158,21 +161,7 @@ async function main(argv: string[]): Promise<number> {
       const [appId, slot] = args;
       if (!appId || !slot) throw new Error(`usage: taurus ${command} <appId> <slot>`);
       const slotName = slot.includes('.') ? slot : slot.replace(/_/g, '.');
-      const profiles = await store.getProfiles(appId);
-      const target = profiles.find((p) => p.name === profile);
-      if (!target) throw new Error(`no profile "${profile}"`);
-      const on = new Set(target.enabled ?? []);
-      const off = new Set(target.disabled ?? []);
-      if (command === 'enable') {
-        on.add(slotName);
-        off.delete(slotName);
-      } else {
-        off.add(slotName);
-        on.delete(slotName);
-      }
-      target.enabled = [...on];
-      target.disabled = [...off];
-      await store.saveProfiles(appId, profiles);
+      await store.setSlotEnabled(appId, profile, slotName, command === 'enable');
       console.log(`${slotName} ${command}d for profile "${profile}"`);
       return 0;
     }
@@ -189,14 +178,20 @@ async function main(argv: string[]): Promise<number> {
     }
 
     case 'serve': {
-      const runtime = new Runtime({ store, adapters: ADAPTERS, schemas: SCHEMAS, log: consoleLogger });
-      const gateway = await startGateway({ runtime, store, port: Number(option(rest, 'port') ?? DEFAULT_PORT) });
+      const broker = new ApprovalBroker();
+      const events = new EventEmitter();
+      const runtime = new Runtime({ store, adapters: ADAPTERS, schemas: SCHEMAS, approve: broker.handler, events, log: consoleLogger });
+      const monitorToken = await store.monitorToken();
+      const monitor = createMonitor({ store, runtime, broker, events, adapters: ADAPTERS, token: monitorToken });
+      const gateway = await startGateway({ runtime, store, port: Number(option(rest, 'port') ?? DEFAULT_PORT), extensions: [monitor] });
       console.log(`Taurus gateway on ${gateway.url}`);
-      for (const appId of await store.listApps()) {
+      console.log(`\nMonitor (approve risky calls here):\n  ${gateway.url}/monitor/#token=${monitorToken}\n`);
+      const apps = await store.listApps();
+      if (apps.length) console.log('PMCP endpoints:');
+      for (const appId of apps) {
         for (const p of await store.getProfiles(appId)) console.log(`  ${gateway.endpoint(appId, p.name)}`);
       }
-      console.log('Tools that delete, send or touch accounts or money answer "approval_required" until the monitor UI lands.');
-      console.log('Get a token with: taurus token <appId>. Press Ctrl+C to stop.');
+      console.log('\nGet a bearer token with: taurus token <appId>, or copy it from the monitor. Press Ctrl+C to stop.');
       await new Promise(() => {});
       return 0;
     }

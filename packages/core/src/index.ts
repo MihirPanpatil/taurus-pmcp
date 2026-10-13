@@ -1,4 +1,5 @@
 export * from './aggregator.js';
+export * from './approvals.js';
 export * from './classify.js';
 export * from './compiler.js';
 export * from './model.js';

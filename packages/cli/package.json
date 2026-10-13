@@ -22,6 +22,7 @@
     "@taurus/capabilities": "workspace:*",
     "@taurus/adapter-rest-observer": "workspace:*",
     "@taurus/gateway": "workspace:*",
-    "@taurus/shell": "workspace:*"
+    "@taurus/shell": "workspace:*",
+    "@taurus/monitor": "workspace:*"
   }
 }

@@ -1,0 +1,27 @@
+{
+  "name": "@taurus/monitor",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Monitor PWA: approvals, tools, activity and checks for every PMCP.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "public"
+  ],
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*",
+    "@taurus/core": "workspace:*",
+    "@taurus/capabilities": "workspace:*",
+    "@taurus/gateway": "workspace:*"
+  }
+}
