@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Todo Fixture</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Todo Fixture</h1>
+        <p class="hint">Taurus testing ladder, level 0</p>
+      </header>
+
+      <section class="row">
+        <label>Project <select id="project-select"></select></label>
+        <input id="new-project-name" placeholder="New project name" />
+        <button id="new-project-btn" type="button">Add project</button>
+      </section>
+
+      <section class="row">
+        <input id="task-title" placeholder="Task title" />
+        <input id="task-desc" placeholder="Description" />
+        <input id="task-due" type="date" />
+        <button id="add-task-btn" type="button">Add task</button>
+      </section>
+
+      <section class="row">
+        <input id="search" placeholder="Search tasks" />
+        <select id="filter">
+          <option value="all">All</option>
+          <option value="open">Open</option>
+          <option value="done">Done</option>
+        </select>
+      </section>
+
+      <ul id="task-list"></ul>
+      <section id="details" aria-live="polite"></section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

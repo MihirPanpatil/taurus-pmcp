@@ -1,0 +1,12 @@
+{
+  "id": "rest-observer",
+  "name": "REST traffic observer",
+  "version": "0.0.1",
+  "specVersion": "0.1",
+  "description": "Turns the JSON requests an app makes to its own site into operation candidates, and replays them through the runtime.",
+  "entry": "dist/index.js",
+  "permissions": ["network.observe", "network.replay"],
+  "provides": { "executors": ["request"] },
+  "capabilityHints": [],
+  "fixtures": ["../../fixtures/todo-app"]
+}

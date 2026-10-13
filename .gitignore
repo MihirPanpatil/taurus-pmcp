@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.taurus/
+.taurus-data/
+*.log
+.DS_Store
+Thumbs.db

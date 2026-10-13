@@ -1,0 +1,19 @@
+{
+  "name": "@taurus/adapter-rest-observer",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Turns observed REST traffic into operation candidates.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*"
+  }
+}

@@ -1,0 +1,12 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+body { margin: 0; padding: 24px 16px; background: Canvas; color: CanvasText; }
+main { max-width: 720px; margin: 0 auto; }
+h1 { margin: 0; font-size: 1.5rem; }
+.hint { margin: 4px 0 20px; opacity: 0.7; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
+input, select, button { font: inherit; padding: 6px 8px; }
+#task-list { list-style: none; padding: 0; }
+#task-list li { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, CanvasText 15%, transparent); }
+#task-list li.done .title { text-decoration: line-through; opacity: 0.6; }
+.title { flex: 1; cursor: pointer; }
+#details { margin-top: 16px; white-space: pre-wrap; opacity: 0.85; }

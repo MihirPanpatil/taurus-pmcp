@@ -1,0 +1,30 @@
+{
+  "name": "taurus-pmcp",
+  "private": true,
+  "type": "module",
+  "description": "A local-first browser that compiles web apps into MCP servers (PMCPs).",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "tsc -b --clean",
+    "test": "tsc -b && vitest run",
+    "fixture": "node fixtures/todo-app/server.mjs",
+    "taurus": "node packages/cli/dist/index.js",
+    "e2e": "tsc -b && node scripts/e2e.mjs",
+    "postinstall": "node scripts/ensure-electron.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "typescript": "5.9.3",
+    "vitest": "^5.0.4",
+    "@taurus/adapter-sdk": "workspace:*",
+    "@taurus/core": "workspace:*",
+    "@taurus/capabilities": "workspace:*",
+    "@taurus/adapter-rest-observer": "workspace:*",
+    "@taurus/gateway": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.1"
+  }
+}

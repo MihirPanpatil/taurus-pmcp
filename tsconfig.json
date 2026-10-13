@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/adapter-sdk" },
+    { "path": "packages/core" },
+    { "path": "packages/capabilities" },
+    { "path": "adapters/rest-observer" },
+    { "path": "packages/gateway" },
+    { "path": "packages/shell" },
+    { "path": "packages/cli" }
+  ]
+}

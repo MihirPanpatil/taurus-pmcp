@@ -1,0 +1,23 @@
+{
+  "name": "@taurus/shell",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Electron shell: app profiles, network capture and compile runs.",
+  "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/main.d.ts",
+      "default": "./dist/main.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*",
+    "@taurus/adapter-rest-observer": "workspace:*",
+    "@taurus/capabilities": "workspace:*",
+    "@taurus/core": "workspace:*",
+    "electron": "44.7.0"
+  }
+}

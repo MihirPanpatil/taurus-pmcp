@@ -1,0 +1,21 @@
+{
+  "name": "@taurus/gateway",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Local MCP gateway serving PMCPs over Streamable HTTP.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@taurus/core": "workspace:*"
+  }
+}

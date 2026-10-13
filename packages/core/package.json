@@ -1,0 +1,19 @@
+{
+  "name": "@taurus/core",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Compiler pipeline, app model, PMCP store and tool runtime.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*"
+  }
+}

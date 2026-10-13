@@ -1,0 +1,20 @@
+{
+  "name": "@taurus/capabilities",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Capability schemas, binders and conformance suites.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@taurus/adapter-sdk": "workspace:*",
+    "@taurus/core": "workspace:*"
+  }
+}

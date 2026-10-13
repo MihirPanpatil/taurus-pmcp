@@ -1,0 +1,26 @@
+{
+  "name": "@taurus/cli",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Command-line entry point: compile, serve, verify, tools.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "taurus": "dist/index.js"
+  },
+  "dependencies": {
+    "@taurus/core": "workspace:*",
+    "@taurus/capabilities": "workspace:*",
+    "@taurus/adapter-rest-observer": "workspace:*",
+    "@taurus/gateway": "workspace:*",
+    "@taurus/shell": "workspace:*"
+  }
+}

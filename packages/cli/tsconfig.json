@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../capabilities"
+    },
+    {
+      "path": "../../adapters/rest-observer"
+    },
+    {
+      "path": "../gateway"
+    },
+    {
+      "path": "../shell"
+    }
+  ]
+}
